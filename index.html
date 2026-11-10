@@ -1,0 +1,404 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>荷花水生植物 AR 實驗室</title>
+
+  <!-- 載入 3D 模型展示工具 -->
+  <script type="module"
+    src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js">
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", sans-serif;
+      background: #f1f7f5;
+      color: #29433e;
+    }
+
+    header {
+      background: #397c6c;
+      color: white;
+      text-align: center;
+      padding: 25px 15px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 10px 0 0;
+    }
+
+    main {
+      max-width: 950px;
+      margin: 25px auto;
+      padding: 0 16px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+    }
+
+    h2 {
+      color: #397c6c;
+      margin-top: 0;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin: 14px 0 7px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #b9d0c8;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 75px;
+      resize: vertical;
+    }
+
+    model-viewer {
+      width: 100%;
+      height: 380px;
+      background: #e9f5f2;
+      border-radius: 12px;
+    }
+
+    .water-control {
+      background: #edf7f4;
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 15px;
+    }
+
+    input[type="range"] {
+      padding: 0;
+      accent-color: #397c6c;
+    }
+
+    .water-value {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #397c6c;
+    }
+
+    button {
+      background: #397c6c;
+      color: white;
+      border: none;
+      padding: 13px 20px;
+      border-radius: 9px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    button:hover {
+      background: #285d50;
+    }
+
+    .level-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .level-buttons button {
+      flex: 1;
+      min-width: 90px;
+    }
+
+    .submit-button {
+      width: 100%;
+      font-size: 18px;
+      padding: 16px;
+      background: #e18b54;
+    }
+
+    .hint {
+      color: #668078;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #668078;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🌿 荷花水生植物 AR 實驗室</h1>
+  <p>調整水位，觀察荷花的生長變化！</p>
+</header>
+
+<main>
+
+  <!-- 學生資料 -->
+  <section class="card">
+    <h2>一、實驗基本資料</h2>
+
+    <label for="studentName">學生姓名</label>
+    <input id="studentName" type="text" placeholder="請輸入姓名">
+
+    <label for="studentClass">班級</label>
+    <input id="studentClass" type="text" placeholder="例如：四年甲班">
+  </section>
+
+  <!-- 3D 模型 -->
+  <section class="card">
+    <h2>二、觀察荷花模型</h2>
+
+    <p>
+      請觀察荷花的根、莖、葉與水面之間的位置關係。
+      你可以拖曳模型，從不同角度觀察。
+    </p>
+
+    <model-viewer
+      id="lotusModel"
+      src="./models/plant.glb"
+      alt="荷花水生植物3D模型"
+      camera-controls
+      auto-rotate
+      shadow-intensity="1"
+      exposure="1">
+    </model-viewer>
+
+    <p id="modelStatus" class="hint">
+      正在載入荷花模型……
+    </p>
+  </section>
+
+  <!-- 水位控制 -->
+  <section class="card">
+    <h2>三、調整水位，進行實驗</h2>
+
+    <p>
+      請調整水位，觀察水位改變時，荷花的根、莖和葉會有什麼變化。
+    </p>
+
+    <div class="water-control">
+      <div class="water-value">
+        目前水位：<span id="waterValue">50</span>%
+      </div>
+
+      <label for="waterSlider">拖曳調整水位</label>
+      <input
+        id="waterSlider"
+        type="range"
+        min="0"
+        max="100"
+        value="50"
+        step="1">
+
+      <div class="level-buttons">
+        <button type="button" onclick="setWaterLevel(20)">低水位</button>
+        <button type="button" onclick="setWaterLevel(50)">中水位</button>
+        <button type="button" onclick="setWaterLevel(80)">高水位</button>
+      </div>
+
+      <p class="hint">
+        注意：目前水位控制會移動模型中的水面物件，
+        實際顯示效果需要依照 GLB 模型測試調整。
+      </p>
+    </div>
+  </section>
+
+  <!-- 觀察紀錄 -->
+  <section class="card">
+    <h2>四、實驗觀察紀錄</h2>
+
+    <label>1. 低水位觀察</label>
+    <textarea id="lowObservation"
+      placeholder="請寫下低水位時，你觀察到的現象……"></textarea>
+
+    <label>2. 中水位觀察</label>
+    <textarea id="middleObservation"
+      placeholder="請寫下中水位時，你觀察到的現象……"></textarea>
+
+    <label>3. 高水位觀察</label>
+    <textarea id="highObservation"
+      placeholder="請寫下高水位時，你觀察到的現象……"></textarea>
+
+    <label>4. 比較三種水位，你發現了什麼？</label>
+    <textarea id="comparison"
+      placeholder="例如：水位越高，荷花的葉子……"></textarea>
+  </section>
+
+  <!-- 植物判斷 -->
+  <section class="card">
+    <h2>五、植物類型判斷</h2>
+
+    <label for="plantType">
+      你認為荷花屬於哪一種水生植物？
+    </label>
+
+    <select id="plantType">
+      <option value="">請選擇</option>
+      <option value="挺水性植物">挺水性植物</option>
+      <option value="沉水性植物">沉水性植物</option>
+      <option value="浮葉性植物">浮葉性植物</option>
+      <option value="漂浮性植物">漂浮性植物</option>
+    </select>
+
+    <label for="reason">請說明你的判斷理由</label>
+    <textarea id="reason"
+      placeholder="我認為荷花屬於……，因為……"></textarea>
+  </section>
+
+  <!-- 學習心得 -->
+  <section class="card">
+    <h2>六、我的實驗心得</h2>
+
+    <label for="reflection">
+      今天的實驗中，我學到了什麼？
+    </label>
+
+    <textarea id="reflection"
+      placeholder="請寫下你的發現或心得……"></textarea>
+  </section>
+
+  <!-- 提交 -->
+  <section class="card">
+    <h2>七、完成實驗</h2>
+
+    <p>
+      請確認已完成觀察紀錄，再按下提交按鈕。
+    </p>
+
+    <button class="submit-button"
+      type="button"
+      onclick="submitExperiment()">
+      提交我的實驗紀錄
+    </button>
+
+    <p id="submitStatus" class="hint"></p>
+  </section>
+
+</main>
+
+<footer>
+  荷花水生植物 AR 實驗室
+</footer>
+
+<script>
+  const waterSlider = document.getElementById("waterSlider");
+  const waterValue = document.getElementById("waterValue");
+  const model = document.getElementById("lotusModel");
+  const modelStatus = document.getElementById("modelStatus");
+
+  let waterNode = null;
+  let initialWaterY = null;
+
+  // 模型載入完成
+  model.addEventListener("load", () => {
+    modelStatus.textContent = "荷花模型載入成功！";
+
+    // 尋找名稱為 WaterSurface 的水面物件
+    waterNode = model.model.getObjectByName("WaterSurface");
+
+    if (waterNode) {
+      initialWaterY = waterNode.position.y;
+      updateWaterLevel();
+    } else {
+      modelStatus.textContent =
+        "模型已載入，但找不到 WaterSurface 水面物件。";
+    }
+  });
+
+  // 模型載入失敗
+  model.addEventListener("error", () => {
+    modelStatus.textContent =
+      "模型載入失敗，請確認 plant.glb 是否放在 models 資料夾。";
+  });
+
+  // 更新水位
+  function updateWaterLevel() {
+    const value = Number(waterSlider.value);
+    waterValue.textContent = value;
+
+    if (waterNode && initialWaterY !== null) {
+      // glTF 模型使用 Y 軸作為垂直方向
+      // 水位範圍先設定為上下 0.5 個模型單位
+      const offset = (value - 50) / 100;
+      waterNode.position.y = initialWaterY + offset;
+    }
+  }
+
+  waterSlider.addEventListener("input", updateWaterLevel);
+
+  // 快速設定水位
+  function setWaterLevel(value) {
+    waterSlider.value = value;
+    updateWaterLevel();
+  }
+
+  // 提交實驗紀錄
+  function submitExperiment() {
+    const data = {
+      name: document.getElementById("studentName").value.trim(),
+      className: document.getElementById("studentClass").value.trim(),
+      lowObservation: document.getElementById("lowObservation").value.trim(),
+      middleObservation: document.getElementById("middleObservation").value.trim(),
+      highObservation: document.getElementById("highObservation").value.trim(),
+      comparison: document.getElementById("comparison").value.trim(),
+      plantType: document.getElementById("plantType").value,
+      reason: document.getElementById("reason").value.trim(),
+      reflection: document.getElementById("reflection").value.trim()
+    };
+
+    if (!data.name || !data.className) {
+      alert("請先填寫學生姓名及班級！");
+      return;
+    }
+
+    if (
+      !data.lowObservation ||
+      !data.middleObservation ||
+      !data.highObservation ||
+      !data.comparison ||
+      !data.plantType ||
+      !data.reason ||
+      !data.reflection
+    ) {
+      alert("請完成所有實驗紀錄！");
+      return;
+    }
+
+    // 目前先在瀏覽器確認資料，不會寫入 Google Sheets
+    console.log("學生實驗紀錄：", data);
+
+    document.getElementById("submitStatus").textContent =
+      "紀錄已整理完成！下一階段將連接 Google Sheets 儲存資料。";
+
+    alert("實驗紀錄已完成整理！");
+  }
+</script>
+
+</body>
+</html>
